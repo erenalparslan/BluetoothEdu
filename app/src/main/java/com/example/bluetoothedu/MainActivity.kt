@@ -25,6 +25,7 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -52,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        dReceiver= DiscoveryReceiver()
+        dReceiver= DiscoveryReceiver(binding.receiverProgress)
         bReceiver= BluetoothReceiver()
         bluetoothManager = getSystemService(BluetoothManager::class.java)
         bluetoothAdapter = bluetoothManager.adapter
@@ -102,10 +103,11 @@ class MainActivity : AppCompatActivity() {
 
         binding.startBReceiver.setOnClickListener {
 
-            bManager.startBReceiver(bReceiver)
+            startBluetoothScan()
         }
 
         binding.startDReceiver.setOnClickListener {
+            binding.receiverProgress.visibility=View.VISIBLE
             bManager.startDReceiver(dReceiver)
         }
 
@@ -132,7 +134,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding?.sendToClient?.setOnClickListener {
-            bManager.sendDataToClient("HELLO CLİENT !!")
+            bManager.startBeaconAdvertising()
         }
         binding.receiverMessage.setOnClickListener {
             Thread {
@@ -147,12 +149,12 @@ class MainActivity : AppCompatActivity() {
 
 
 
- /*   @SuppressLint("MissingPermission")
+    @SuppressLint("MissingPermission")
     private fun startBluetoothScan() {
         bluetoothLeScanner?.startScan(scanCallback)
-    }*/
+    }
 
-/*
+
     private val scanCallback = object : ScanCallback() {
         @SuppressLint("MissingPermission")
         override fun onScanResult(callbackType: Int, result: ScanResult) {
@@ -168,7 +170,7 @@ class MainActivity : AppCompatActivity() {
             // Handle scan failure
             Log.d("ScanEren", "onScanFailed: $errorCode ")
         }
-    }*/
+    }
 
     private val gattCallback = object : BluetoothGattCallback() {
         @SuppressLint("MissingPermission")
@@ -245,13 +247,13 @@ class MainActivity : AppCompatActivity() {
                     && ContextCompat.checkSelfPermission(
                 this,
                 android.Manifest.permission.BLUETOOTH_ADMIN
-            ) == PackageManager.PERMISSION_GRANTED -> {
+            ) == PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED-> {
                 // Bluetooth izinleri zaten verilmiş
                 Log.d("Eren", "Bluetooth izinleri zaten var.")
             }
 
             shouldShowRequestPermissionRationale(android.Manifest.permission.BLUETOOTH)
-                    || shouldShowRequestPermissionRationale(android.Manifest.permission.BLUETOOTH_ADMIN) -> {
+                    || shouldShowRequestPermissionRationale(android.Manifest.permission.BLUETOOTH_ADMIN)|| shouldShowRequestPermissionRationale(android.Manifest.permission.ACCESS_FINE_LOCATION)-> {
                 // İzin reddedildi ancak kullanıcıdan gerekçe istenebilir
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     Log.d("Eren", "Bluetooth izinlerini iste.")
@@ -259,7 +261,9 @@ class MainActivity : AppCompatActivity() {
                         this,
                         arrayOf(
                             android.Manifest.permission.BLUETOOTH,
-                            android.Manifest.permission.BLUETOOTH_ADMIN
+                            android.Manifest.permission.BLUETOOTH_ADMIN,
+                            Manifest.permission.ACCESS_FINE_LOCATION
+
                         ),
                         101
                     )
@@ -274,7 +278,9 @@ class MainActivity : AppCompatActivity() {
                         this,
                         arrayOf(
                             android.Manifest.permission.BLUETOOTH,
-                            android.Manifest.permission.BLUETOOTH_ADMIN
+                            android.Manifest.permission.BLUETOOTH_ADMIN,
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.BLUETOOTH_ADVERTISE,
                         ),
                         101
                     )

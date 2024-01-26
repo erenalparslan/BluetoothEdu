@@ -7,10 +7,14 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import android.view.View
+import android.widget.ProgressBar
+import android.widget.Toast
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.snackbar.Snackbar.SnackbarLayout
 
-class DiscoveryReceiver :BroadcastReceiver() {
+class DiscoveryReceiver(val progressBar: ProgressBar) : BroadcastReceiver() {
 
-    var a=true
     @SuppressLint("MissingPermission")
     override fun onReceive(p0: Context?, p1: Intent?) {
         val action: String? = p1?.action
@@ -21,27 +25,33 @@ class DiscoveryReceiver :BroadcastReceiver() {
                 // object and its info from the Intent.
                 val device: BluetoothDevice? =
                     p1?.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
-                if(device?.name!=null) {
+                if (device?.name != null) {
                     val deviceName = device.name
                     Log.d(TAG, "---------------->>>Device Name: $deviceName")
 
-                       /* if(a){
-                            //Bulduğu ilk cihazla eşleşmek ister
-                            Log.e(TAG, "Bond Device: $deviceName")
-                            device.createBond()
-                            a=false
-                        }*/
+                    if (deviceName == "Octomall") {
+                        //Bulduğu ilk cihazla eşleşmek ister
+                        Log.e(TAG, "Bond Device: $deviceName")
+                        Toast.makeText(
+                            p0,
+                            "Octomall cihazına bağlantı isteği gönderildi  ",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        device.createBond()
+                    }
                 }
-                if(device?.name!=null){
-                    when(device?.bondState){
+                if (device?.name != null) {
+                    when (device?.bondState) {
 
-                        BluetoothDevice.BOND_NONE->{
+                        BluetoothDevice.BOND_NONE -> {
                             Log.i(TAG, "None: ${device.name} ")
                         }
-                        BluetoothDevice.BOND_BONDED->{
+
+                        BluetoothDevice.BOND_BONDED -> {
                             Log.e(TAG, "Bonded: ${device.name} ")
                         }
-                        BluetoothDevice.BOND_BONDING->{
+
+                        BluetoothDevice.BOND_BONDING -> {
                             Log.d(TAG, "Bonding: ${device.name} ")
                         }
                     }
@@ -51,6 +61,7 @@ class DiscoveryReceiver :BroadcastReceiver() {
             }
 
             BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> {
+                progressBar.visibility = View.GONE
                 Log.i(TAG, "ACTION_DISCOVERY_FINISHED: ")
             }
 
@@ -65,7 +76,7 @@ class DiscoveryReceiver :BroadcastReceiver() {
 
     }
 
-    companion object{
+    companion object {
         const val TAG = "DiscoveryReceiver"
     }
 }
